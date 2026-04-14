@@ -12,29 +12,29 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// NVIDIA API config
+// keep the api key secured in the backend so people can't steal it
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
 const NVIDIA_MODEL = 'meta/llama-4-maverick-17b-128e-instruct';
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 
 if (!NVIDIA_API_KEY) {
-  console.error('ERROR: NVIDIA_API_KEY is not set in .env file');
+  console.error('bro you forgot to set the NVIDIA_API_KEY in .env file :(');
   process.exit(1);
 }
 
-// Middleware
+// set up basic security and cors
 app.use(helmet());
 app.use(cors());
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '5mb' })); // 5mb should be plenty for raw syllabus text
 
-// Rate limiting — 10 requests per minute per IP
+// rate limiting so we don't go broke on the free tier lmao (10 reqs/min)
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
-    error: 'Too many requests. Please wait a minute before trying again.',
+    error: 'calm down, too many requests. wait a minute.',
   },
 });
 
@@ -133,7 +133,7 @@ async function callLLM(syllabusText) {
 
 // ============ API Routes ============
 
-// POST /api/extract — receives syllabus text, returns structured events
+// the main brains of the operation: gets syllabus text, hands back structured json 
 app.post('/api/extract', apiLimiter, async (req, res) => {
   try {
     const { text } = req.body;
@@ -146,14 +146,13 @@ app.post('/api/extract', apiLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Text is too short to be a syllabus.' });
     }
 
-    // DLP Security Gate: Prevent restricted T4 data processing
-    // Blocks standard format SSN (XXX-XX-XXXX) and Credit Card (4x4 digits)
+    // block obvious SSNs or credit cards so we don't get in trouble lol
     const dlpRegex = /\b\d{3}-\d{2}-\d{4}\b|\b(?:[0-9]{4}[ -]?){3}[0-9]{4}\b/;
     if (dlpRegex.test(text)) {
-      return res.status(403).json({ error: 'DLP Action: Blocked transmission. Text contains patterns resembling restricted data (SSN/CC). Please redact and upload again.' });
+      return res.status(403).json({ error: 'yo please remove your SSN or credit card from the syllabus first, kinda sketchy to upload that.' });
     }
 
-    // Cap input length to prevent abuse (roughly ~100 pages of text)
+    // trim it down just in case someone uploads a 500 page book by accident
     const trimmedText = text.slice(0, 100000);
 
     const result = await callLLM(trimmedText);
@@ -164,17 +163,18 @@ app.post('/api/extract', apiLimiter, async (req, res) => {
   }
 });
 
-// Health check
+// basic health check to see if server is alive
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', model: NVIDIA_MODEL });
 });
 
-// Serve static frontend in production
+// serve the frontend build in production
 app.use(express.static(path.join(__dirname, 'dist')));
 app.get(/^(.*)$/, (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
+// kick off the server
 app.listen(PORT, () => {
-  console.log(`SyllabusCal server running on http://localhost:${PORT}`);
+  console.log(`server is chilling at http://localhost:${PORT}`);
 });

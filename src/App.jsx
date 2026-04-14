@@ -28,10 +28,10 @@ function App() {
       const text = await extractTextFromPDF(file);
 
       if (!text || text.trim().length < 50) {
-        throw new Error('Could not extract enough text from this PDF. It might be scanned/image-based.');
+        throw new Error('Couldn\'t extract enough text from this PDF. Maybe it\'s just an image? Try a text-based pdf.');
       }
 
-      // Step 2: Send to backend
+      // step 2: toss it to the backend for the AI magic
       setLoadingStep(1);
       setTimeout(() => setLoadingStep(2), 1500);
 
@@ -70,7 +70,7 @@ function App() {
 
   return (
     <>
-      {/* Header */}
+      {/* header stuff */}
       <header className="app-header">
         <div className="container header-inner">
           <div className="logo" onClick={handleReset} role="button" tabIndex={0}>
@@ -87,7 +87,7 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* main body */}
       <main className="container main-content">
         {/* Hero — upload phase only */}
         {phase === 'upload' && (
@@ -162,7 +162,7 @@ function App() {
           </div>
         )}
 
-        {/* How it works */}
+        {/* instructions */}
         {phase === 'upload' && (
           <section className="how-it-works animate-fade-in">
             <h2>How it works</h2>
@@ -187,11 +187,11 @@ function App() {
         )}
       </main>
 
-      {/* Footer */}
+      {/* basically the gdpr compliance stuff down here */}
       <footer className="app-footer">
         <div className="container footer-inner">
           <p>
-            <strong>Privacy by Design:</strong> Data is transmitted using TLS 1.2+, processed securely in-memory, and immediately destroyed. Content is not logged or used for model training.
+            <strong>Privacy Disclaimer:</strong> none of your data is saved anywhere. we use TLS 1.2+ encryption, the backend processes everything in-memory, and then throws it out. not used for AI training either.
           </p>
         </div>
       </footer>
