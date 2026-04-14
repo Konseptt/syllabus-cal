@@ -175,7 +175,7 @@ function App() {
               <div className="step-card glass-card">
                 <div className="step-number">2</div>
                 <h3>AI Extracts</h3>
-                <p>Google's Gemini AI reads your syllabus and pulls out every date, deadline, and exam.</p>
+                <p>NVIDIA LLaMA reads your syllabus and pulls out every date, deadline, and exam.</p>
               </div>
               <div className="step-card glass-card">
                 <div className="step-number">3</div>
