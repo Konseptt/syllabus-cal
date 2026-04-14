@@ -1,42 +1,52 @@
-# Syllabus to Calendar
+# SyllabusCal 📅
 
-Upload a syllabus PDF. AI extracts every due date, exam, and reading, exports a `.ics` file you import into Google Calendar in one click.
+**SyllabusCal** is an elegant, open-source academic tool built to instantly convert your university syllabus PDFs into Google Calendar templates. It utilizes an Academic Brutalism design aesthetic to minimize "AI slop" and maximize legible execution. 
+
+By running unstructured PDF data through an NVIDIA-hosted LLaMA 3.1 LLM, this application isolates academic deadlines, exams, and labs seamlessly and returns them as a `.ics` stream.
 
 ## Features
-- **100% Secure**: Files are processed locally and text is extracted in your browser.
-- **Smart Extraction**: Uses Google's Gemini AI to accurately pull all important dates and deadlines. 
-- **Privacy-First**: No data is stored or logged. The extracted text is securely sent to the API and immediately discarded.
+
+- **Automated Text Extraction**: Built entirely using `pdfjs-dist` to parse academic syllabi directly on a browser thread.
+- **LLaMA Academic Parsing**: Processes syllabus blocks aggressively to extract assignments and return standard schema.
+- **Privacy by Design**: Strictly memory-bound environment. No payloads are written to disk. All transactions utilize TLS-wrapped REST structures and payloads are destroyed immediately post-parse.
+- **Backend Architecture Defense**: Hosted securely utilizing Express Helmet controls (HSTS), distributed local rate limiting strategies, and deep regex DLP triggers blocking highly restricted information (SSN/CC).
 
 ## Tech Stack
-- Frontend: React + Vite (Glassmorphic dark UI)
-- Backend: Express.js (API Proxy + Rate Limiting)
-- PDF Extraction: `pdfjs-dist`
-- AI Model: `gemini-2.0-flash-lite`
 
-## Local Development
+- **Frontend**: React 19 / Vite 8 
+- **Backend API Proxy**: Node.js / Express 5
+- **Aesthetic Core**: Vanilla CSS (Academic Neo-Brutalism)
+- **AI Interface**: NVIDIA NIM API Endpoint (`meta/llama-4-maverick-17b-128e-instruct`)
 
-1. Install dependencies:
+## Local Installation
+
+Ensure you have Node.js available in your environment variables.
+
+1. **Clone the Repo**
+   ```bash
+   git clone https://github.com/Konseptt/syllabus-cal.git
+   cd syllabus-cal
+   ```
+
+2. **Install Dependencies**
    ```bash
    npm install
    ```
 
-2. Create a `.env` file based on the example and add your Gemini API key:
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your GEMINI_API_KEY
+3. **Configure Environment Keys**
+   Create a `.env` file in the root directory and inject your standard NVIDIA Build API credentials:
+   ```env
+   NVIDIA_API_KEY=your_nvidia_api_key_here
+   PORT=3001
    ```
 
-3. Start both the frontend dev server and the local proxy backend:
+4. **Launch the Servers**
+   To launch the frontend Vite instance and the backend LLM proxy server simultaneously:
    ```bash
    npm run dev
    ```
+   Navigate to `localhost:5173` in your browser.
 
-4. The app will be running at `http://localhost:5173`.
+## Contributing
 
-## Deployment
-This app can be deployed to any Node.js hosting provider (like Render, Railway, or Heroku). It is no longer suitable for static GitHub Pages because it now requires a Node.js backend to securely proxy the Gemini API calls and handle rate limiting. 
-
-For deployment:
-1. Set the `GEMINI_API_KEY` environment variable on your host.
-2. The build command is `npm run build`.
-3. The start command is `npm start`.
+Designed exclusively for students, academics, and schedule management. Contributions to the aesthetic or the extraction mechanisms are heavily welcomed. Fork the standard repo, configure an NVIDIA NIM developer token, and submit a PR!
