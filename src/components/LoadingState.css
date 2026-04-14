@@ -1,0 +1,112 @@
+/* LoadingState.css */
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.loading-card {
+  padding: 40px 48px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Spinner ring */
+.loading-spinner-ring {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent-purple);
+  animation: spin 1s linear infinite;
+  position: relative;
+}
+
+.spinner-inner {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-bottom-color: var(--accent-indigo);
+  animation: spin 0.6s linear infinite reverse;
+}
+
+/* Label */
+.loading-label {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+/* Step indicator */
+.loading-steps {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.loading-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-subtle);
+  transition: all var(--transition-base);
+}
+
+.loading-step.active .step-dot {
+  background: var(--accent-purple);
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-step.done .step-dot {
+  background: var(--color-reading);
+}
+
+.step-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.loading-step.active .step-label {
+  color: var(--text-secondary);
+}
+
+.loading-step.done .step-label {
+  color: var(--color-reading);
+}
+
+/* Shimmer skeleton lines */
+.shimmer-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.shimmer-line {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--border-subtle) 25%,
+    rgba(167, 139, 250, 0.12) 50%,
+    var(--border-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
