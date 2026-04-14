@@ -5,12 +5,16 @@ import './EventsTable.css';
  * Displays extracted events in a sortable, filterable table.
  * Users can select which events to export to .ics.
  */
-function EventsTable({ events, courseName, semester, onExport }) {
+function EventsTable({ events, courseName, semester, onExport, onAddEvent }) {
   const [selectedIds, setSelectedIds] = useState(
     () => new Set(events.map((_, i) => i))
   );
   const [filterType, setFilterType] = useState('all');
   const [sortAsc, setSortAsc] = useState(true);
+
+  // Manual event addition state
+  const [isAdding, setIsAdding] = useState(false);
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', type: 'assignment', description: '' });
 
   // Filter events by type
   const filtered = filterType === 'all'
@@ -50,6 +54,20 @@ function EventsTable({ events, courseName, semester, onExport }) {
   function handleExport() {
     const selected = events.filter((_, i) => selectedIds.has(i));
     onExport(selected);
+  }
+
+  function handleManualSubmit() {
+    if (!newEvent.title || !newEvent.date) return;
+    onAddEvent({ ...newEvent }); // fires state update to App.jsx
+    
+    // Auto-select the new event (will be at the end of the array due to append)
+    const nextIds = new Set(selectedIds);
+    nextIds.add(events.length);
+    setSelectedIds(nextIds);
+    
+    // reset form
+    setIsAdding(false);
+    setNewEvent({ title: '', date: '', time: '', type: 'assignment', description: '' });
   }
 
   function formatDate(dateStr) {
@@ -174,12 +192,47 @@ function EventsTable({ events, courseName, semester, onExport }) {
                 </tr>
               );
             })}
+
+            {isAdding && (
+              <tr className="manual-entry-row">
+                <td></td>
+                <td className="cell-date">
+                  <input type="date" className="input-field btn-sm" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} />
+                </td>
+                <td className="cell-time">
+                  <input type="time" className="input-field btn-sm" value={newEvent.time} onChange={e => setNewEvent({...newEvent, time: e.target.value})} />
+                </td>
+                <td>
+                  <select className="input-field btn-sm" value={newEvent.type} onChange={e => setNewEvent({...newEvent, type: e.target.value})}>
+                    {typeLabels.filter(t => t !== 'all').map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </td>
+                <td className="cell-title" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input type="text" placeholder="Title (e.g. Midterm)" className="input-field btn-sm" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
+                  <input type="text" placeholder="Details (optional)" className="input-field btn-sm" value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn-primary btn-sm" onClick={handleManualSubmit}>Save Event</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setIsAdding(false)}>Cancel</button>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
       {/* Export bar */}
       <div className="export-bar">
+        <button
+          className="btn btn-secondary"
+          onClick={() => setIsAdding(true)}
+          style={{ marginRight: 'auto' }}
+        >
+          + Add Missing Event
+        </button>
+
         <p className="selection-info">
           {selectedIds.size} of {events.length} events selected
         </p>

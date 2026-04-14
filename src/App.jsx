@@ -59,6 +59,10 @@ function App() {
     setTimeout(() => setExportSuccess(false), 4000);
   }
 
+  function handleAddEvent(newEvent) {
+    setEvents(prev => [...prev, newEvent]);
+  }
+
   function handleReset() {
     setPhase('upload');
     setEvents([]);
@@ -123,6 +127,7 @@ function App() {
               courseName={courseName}
               semester={semester}
               onExport={handleExport}
+              onAddEvent={handleAddEvent}
             />
 
             {exportSuccess && (
