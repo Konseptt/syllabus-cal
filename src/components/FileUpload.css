@@ -10,7 +10,7 @@
   max-width: 600px;
   background-color: var(--bg-card);
   border: 4px dashed var(--border-color);
-  padding: 48px 24px;
+  padding: 64px 24px;
   text-align: center;
   cursor: pointer;
   transition: all var(--transition-fast);
