@@ -1,52 +1,129 @@
 # SyllabusCal 📅
 
-**SyllabusCal** is an elegant, open-source academic tool built to instantly convert your university syllabus PDFs into Google Calendar templates. It utilizes an Academic Brutalism design aesthetic to minimize "AI slop" and maximize legible execution. 
+Turn a class syllabus PDF into a clean `.ics` calendar file you can import into Google Calendar.
 
-By running unstructured PDF data through an NVIDIA-hosted LLaMA 3.1 LLM, this application isolates academic deadlines, exams, and labs seamlessly and returns them as a `.ics` stream.
+Live site: https://syllabuscal.ranjansharma.info.np
 
-## Features
+## Why I built this
 
-- **Automated Text Extraction**: Built entirely using `pdfjs-dist` to parse academic syllabi directly on a browser thread.
-- **LLaMA Academic Parsing**: Processes syllabus blocks aggressively to extract assignments and return standard schema.
-- **Privacy by Design**: Strictly memory-bound environment. No payloads are written to disk. All transactions utilize TLS-wrapped REST structures and payloads are destroyed immediately post-parse.
-- **Backend Architecture Defense**: Hosted securely utilizing Express Helmet controls (HSTS), distributed local rate limiting strategies, and deep regex DLP triggers blocking highly restricted information (SSN/CC).
+I wanted a faster way to move deadlines from long syllabus documents into a calendar without manually typing every date.  
+SyllabusCal extracts text in the browser, sends only the syllabus content to a protected backend endpoint, returns structured events, and lets you export an `.ics` file in one flow.
 
-## Tech Stack
+## What it does
 
-- **Frontend**: React 19 / Vite 8 
-- **Backend API Proxy**: Node.js / Express 5
-- **Aesthetic Core**: Vanilla CSS (Academic Neo-Brutalism)
-- **AI Interface**: NVIDIA NIM API Endpoint (`meta/llama-4-maverick-17b-128e-instruct`)
+- Upload a syllabus PDF
+- Extract text client side with `pdfjs-dist`
+- Parse assignments, exams, labs, readings, and other dated items using NVIDIA NIM (`meta/llama-4-maverick-17b-128e-instruct`)
+- Review and edit extracted events in a table UI
+- Add missing events manually
+- Export selected events as an `.ics` calendar file
 
-## Local Installation
+## Product flow
 
-Ensure you have Node.js available in your environment variables.
+```mermaid
+flowchart TD
+    A[Upload syllabus PDF] --> B[Extract text in browser via pdfjs-dist]
+    B --> C[POST /api/extract]
+    C --> D[Express API validation and rate limit]
+    D --> E[NVIDIA NIM chat completion]
+    E --> F[Structured JSON events]
+    F --> G[Review events table]
+    G --> H[Optional manual event edits]
+    H --> I[Generate .ics]
+    I --> J[Download and import to Google Calendar]
+```
 
-1. **Clone the Repo**
+## Architecture diagram
+
+```mermaid
+flowchart LR
+    subgraph Browser[Frontend React + Vite]
+      U[FileUpload component]
+      P[pdfExtractor service]
+      T[EventsTable component]
+      I[icsGenerator service]
+    end
+
+    subgraph API[Backend Node + Express]
+      R[/api/extract]
+      S[Input checks + DLP regex]
+      L[Rate limiter + helmet + cors]
+      N[NVIDIA NIM API]
+    end
+
+    U --> P
+    P --> R
+    R --> S
+    S --> L
+    L --> N
+    N --> T
+    T --> I
+```
+
+## UI state flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> upload
+    upload --> loading: PDF selected
+    loading --> results: events extracted
+    loading --> error: extraction failed
+    error --> upload: try again
+    results --> upload: upload another syllabus
+```
+
+## Main stack
+
+- Frontend: React 19, Vite 8, vanilla CSS
+- Backend: Node.js, Express 5
+- PDF parsing: `pdfjs-dist`
+- AI extraction: NVIDIA NIM API
+- Export format: RFC 5545 `.ics`
+
+## Local setup
+
+1. Clone and enter the repo
    ```bash
    git clone https://github.com/Konseptt/syllabus-cal.git
    cd syllabus-cal
    ```
 
-2. **Install Dependencies**
+2. Install dependencies
    ```bash
    npm install
    ```
 
-3. **Configure Environment Keys**
-   Create a `.env` file in the root directory and inject your standard NVIDIA Build API credentials:
+3. Add environment variables in `.env`
    ```env
    NVIDIA_API_KEY=your_nvidia_api_key_here
    PORT=3001
    ```
 
-4. **Launch the Servers**
-   To launch the frontend Vite instance and the backend LLM proxy server simultaneously:
+4. Run in development
    ```bash
    npm run dev
    ```
-   Navigate to `localhost:5173` in your browser.
+
+5. Open
+   - Frontend: `http://localhost:5173`
+   - API health: `http://localhost:3001/api/health`
+
+## Scripts
+
+- `npm run dev` starts frontend and backend together
+- `npm run dev:frontend` starts Vite only
+- `npm run dev:backend` starts Express only
+- `npm run lint` runs ESLint
+- `npm run build` creates a production build
+
+## Security and privacy notes
+
+- API key stays on the backend
+- Requests are rate limited
+- `helmet` and `cors` middleware are enabled
+- Input is checked for obvious SSN and card number patterns before model calls
+- Text is processed in memory and not written to disk by app logic
 
 ## Contributing
 
-Designed exclusively for students, academics, and schedule management. Contributions to the aesthetic or the extraction mechanisms are heavily welcomed. Fork the standard repo, configure an NVIDIA NIM developer token, and submit a PR!
+Pull requests are welcome. If you want to improve extraction quality, UI clarity, or export behavior, feel free to open an issue or submit a PR.

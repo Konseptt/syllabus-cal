@@ -1,0 +1,15 @@
+repository:
+  name: syllabus-cal
+  description: Convert syllabus PDFs into editable calendar events and export an .ics file in minutes.
+  homepage: https://syllabuscal.ranjansharma.info.np
+  topics:
+    - syllabus
+    - calendar
+    - pdf
+    - react
+    - vite
+    - express
+    - nvidia
+    - llm
+    - ics
+    - google-calendar
