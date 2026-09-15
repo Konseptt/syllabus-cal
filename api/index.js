@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // keep the api key secured in the backend so people can't steal it
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-const NVIDIA_MODEL = 'meta/llama-4-maverick-17b-128e-instruct';
+const NVIDIA_MODEL = 'meta/llama-3.3-70b-instruct';
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 
 if (!NVIDIA_API_KEY) {
