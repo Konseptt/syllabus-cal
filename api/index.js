@@ -17,6 +17,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
 const NVIDIA_MODEL = 'moonshotai/kimi-k3';
 
+function usableReply(text) {
+  const trimmed = typeof text === 'string' ? text.trim() : '';
+  if (!trimmed || /^!+$/.test(trimmed)) return '';
+  return trimmed;
+}
+
 if (!NVIDIA_API_KEY) {
   console.error('bro you forgot to set the NVIDIA_API_KEY in .env file :(');
   process.exit(1);
@@ -89,8 +95,10 @@ async function callLLM(syllabusText) {
         top_p: 0.95,
         max_tokens: 1024,
         stream: false,
+        reasoning_effort: 'low',
       });
-      rawText = completion.choices[0]?.message?.content;
+      const message = completion.choices[0]?.message;
+      rawText = usableReply(message?.content) || usableReply(message?.reasoning_content);
     } catch (err) {
       if (err?.status === 429) {
         if (attempt < maxRetries - 1) {
