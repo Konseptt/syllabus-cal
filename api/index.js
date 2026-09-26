@@ -1,4 +1,5 @@
 import express from 'express';
+import OpenAI from 'openai';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -15,12 +16,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // keep the api key secured in the backend so people can't steal it
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
 const NVIDIA_MODEL = 'meta/llama-3.3-70b-instruct';
-const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 
 if (!NVIDIA_API_KEY) {
   console.error('bro you forgot to set the NVIDIA_API_KEY in .env file :(');
   process.exit(1);
 }
+
+const client = new OpenAI({
+  baseURL: 'https://integrate.api.nvidia.com/v1',
+  apiKey: NVIDIA_API_KEY,
+});
 
 // set up basic security and cors
 app.use(helmet());
@@ -72,41 +77,33 @@ async function callLLM(syllabusText) {
   const maxRetries = 3;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const response = await fetch(NVIDIA_URL, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${NVIDIA_API_KEY}`
-      },
-      body: JSON.stringify({
+    let rawText;
+    try {
+      const completion = await client.chat.completions.create({
         model: NVIDIA_MODEL,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: `Syllabus text:\n\n${syllabusText}` }
         ],
-        temperature: 0.1,
-        max_tokens: 2000
-      }),
-    });
-
-    // Handle rate limiting
-    if (response.status === 429) {
-      if (attempt < maxRetries - 1) {
-        const waitMs = Math.pow(2, attempt + 1) * 1000;
-        console.log(`Rate limited, retrying in ${waitMs / 1000}s...`);
-        await new Promise((r) => setTimeout(r, waitMs));
-        continue;
+        temperature: 0.2,
+        top_p: 0.7,
+        max_tokens: 1024,
+        stream: false,
+      });
+      rawText = completion.choices[0]?.message?.content;
+    } catch (err) {
+      if (err?.status === 429) {
+        if (attempt < maxRetries - 1) {
+          const waitMs = Math.pow(2, attempt + 1) * 1000;
+          console.log(`Rate limited, retrying in ${waitMs / 1000}s...`);
+          await new Promise((r) => setTimeout(r, waitMs));
+          continue;
+        }
+        throw new Error('API rate limit reached. Please try again in a minute.');
       }
-      throw new Error('API rate limit reached. Please try again in a minute.');
+      const status = err?.status ? ` (${err.status})` : '';
+      throw new Error(`API error${status}: ${err?.message || err}`);
     }
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`API error (${response.status}): ${errText}`);
-    }
-
-    const data = await response.json();
-    let rawText = data?.choices?.[0]?.message?.content;
 
     if (!rawText) {
       throw new Error('Empty response from LLM API.');
