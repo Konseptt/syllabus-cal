@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // keep the api key secured in the backend so people can't steal it
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-const NVIDIA_MODEL = 'meta/llama-3.3-70b-instruct';
+const NVIDIA_MODEL = 'moonshotai/kimi-k3';
 
 if (!NVIDIA_API_KEY) {
   console.error('bro you forgot to set the NVIDIA_API_KEY in .env file :(');
@@ -85,8 +85,8 @@ async function callLLM(syllabusText) {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: `Syllabus text:\n\n${syllabusText}` }
         ],
-        temperature: 0.2,
-        top_p: 0.7,
+        temperature: 1,
+        top_p: 0.95,
         max_tokens: 1024,
         stream: false,
       });
